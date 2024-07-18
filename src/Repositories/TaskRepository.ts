@@ -10,23 +10,40 @@ export default class TaskRepository {
     return this.prisma.task.findMany();
   }
 
-  async delete(id: number) {
-    return this.prisma.task.delete({
+  async findById(id: number) {
+    return this.prisma.task.findUnique({
       where: {
         id,
       },
     });
   }
 
+  async delete(id: number) {
+    return await this.prisma.task.delete({
+      where: {
+        id,
+      },
+    });
+  }  
+
   async save(
     data:
       | Prisma.XOR<Prisma.TaskCreateInput, Prisma.TaskUncheckedCreateInput>
       | Prisma.XOR<Prisma.TaskUpdateInput, Prisma.TaskUncheckedUpdateInput>,
   ) {
-    if (!data.id) {
-      // @todo IMPLEMENT HERE USING PRISMA API
-    }
+    const { id, ...rest } = data;
 
-    // @todo IMPLEMENT HERE USING PRISMA API
+    if (id) {
+      // Mise à jour de la tâche existante
+      return this.prisma.task.update({
+        where: { id: id as number },
+        data: rest as Prisma.TaskUpdateInput,
+      });
+    } else {
+      // Création d'une nouvelle tâche
+      return this.prisma.task.create({
+        data: data as Prisma.TaskCreateInput,
+      });
+    }
   }
 }
